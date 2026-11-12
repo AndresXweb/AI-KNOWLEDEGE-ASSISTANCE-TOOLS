@@ -1,3 +1,4 @@
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,6 +15,25 @@ class ConceptArgs(StrictArgs):
         max_length=80,
     )
 
+class EffortArgs(StrictArgs):
+    difficulty: Literal["basico", "intermedio", "avanzado"] = Field(
+        description=(
+            "Nivel de dificultad de la actividad formativa: "
+            "basico, intermedio o avanzado."
+        ),
+    )
+
+    topics: int = Field(
+        ge=1,
+        le=50,
+        description="Cantidad de temas que hay que estudiar.",
+    )
+
+    weekly_hours: float = Field(
+        gt=0,
+        le=60,
+        description="Horas que el aprendiz puede estudiar por semana.",
+    )
 
 class HoursArgs(StrictArgs):
     hours_per_day: float = Field(

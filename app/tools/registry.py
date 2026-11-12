@@ -8,12 +8,15 @@ from app.tools.functions import (
     lookup_ai_concept,
     calculate_study_hours,
     create_study_task,
+    estimate_learning_effort,
 )
 
 from app.tools.schemas import (
     ConceptArgs,
+    EffortArgs,
     HoursArgs,
     TaskArgs,
+
 )
 
 
@@ -42,6 +45,21 @@ REGISTRY = {
         (
             "Crea una tarea de estudio. "
             "Requiere confirmación explícita."
+        ),
+    ),
+
+    "estimate_learning_effort": (
+        EffortArgs,
+        estimate_learning_effort,
+        False,
+        (
+            "Estima el esfuerzo y la duración para completar una "
+            "actividad formativa. Recibe la dificultad (basico, "
+            "intermedio o avanzado), la cantidad de temas y las horas "
+            "que el aprendiz puede estudiar por semana. Devuelve las "
+            "horas totales y las semanas necesarias. Si el usuario no "
+            "indica la dificultad, pregúntasela antes de usar la "
+            "herramienta."
         ),
     ),
 }

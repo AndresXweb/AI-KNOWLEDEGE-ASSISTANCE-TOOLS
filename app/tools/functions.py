@@ -1,11 +1,18 @@
-
+import math
 from uuid import uuid4
 
 from app.tools.schemas import (
     ConceptArgs,
+    EffortArgs,
     HoursArgs,
     TaskArgs,
 )
+
+HOURS_PER_TOPIC = {
+    "basico": 2,
+    "intermedio": 4,
+    "avanzado": 6,
+}
 
 
 CONCEPTS = {
@@ -73,4 +80,24 @@ def create_study_task(
     return {
         "created": True,
         "task": item,
+    }
+
+def estimate_learning_effort(
+    args: EffortArgs,
+) -> dict:
+    hours_per_topic = HOURS_PER_TOPIC[args.difficulty]
+
+    total_hours = args.topics * hours_per_topic
+
+    weeks_needed = math.ceil(
+        round(total_hours / args.weekly_hours, 6)
+    )
+
+    return {
+        "difficulty": args.difficulty,
+        "topics": args.topics,
+        "hours_per_topic": hours_per_topic,
+        "total_hours": total_hours,
+        "weekly_hours": args.weekly_hours,
+        "weeks_needed": weeks_needed,
     }
