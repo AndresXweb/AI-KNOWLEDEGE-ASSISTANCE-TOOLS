@@ -14,6 +14,7 @@ class Settings:
     llm_provider: str = "openrouter"
     ollama_model: str = "llama3.1:8b"
     ollama_base_url: str = "http://localhost:11434/v1"
+    memory_db_path: str = "data/memory.db"
 
     @property
     def active_model(self) -> str:
@@ -44,5 +45,8 @@ def get_settings() -> Settings:
         ollama_base_url=os.getenv(
             "OLLAMA_BASE_URL",
             "http://localhost:11434/v1",
+        ),
+        memory_db_path=os.getenv(
+            "MEMORY_DB_PATH", "data/memory.db"
         ),
     )
