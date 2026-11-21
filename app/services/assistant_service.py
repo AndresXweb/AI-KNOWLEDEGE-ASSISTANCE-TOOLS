@@ -1,4 +1,5 @@
-
+from app.context.builder import build_messages
+from app.memory.repository import Message, Project
 from app.providers.base import LLMProvider
 
 
@@ -23,18 +24,18 @@ class AssistantService:
         temperature: float = 0.3,
         top_p: float = 1.0,
         max_tokens: int = 300,
+        history: list[Message] | None = None,
+        project: Project | None = None,
+        max_chars: int = 12000,
     ) -> str:
 
-        messages = [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": question,
-            },
-        ]
+        messages = build_messages(
+            SYSTEM_PROMPT,
+            question,
+            history=history,
+            project=project,
+            max_chars=max_chars,
+        )
 
         return await self.provider.generate(
             messages=messages,

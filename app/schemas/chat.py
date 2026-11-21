@@ -31,3 +31,18 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     model: str
+
+
+class MemoryChatRequest(ChatRequest):
+    conversation_id: int | None = Field(
+        default=None,
+        description="Conversación existente; si se omite se crea una",
+    )
+    project_id: int | None = Field(
+        default=None,
+        description="Proyecto al que pertenece la conversación nueva",
+    )
+
+
+class MemoryChatResponse(ChatResponse):
+    conversation_id: int

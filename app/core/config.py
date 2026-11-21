@@ -15,6 +15,8 @@ class Settings:
     ollama_model: str = "llama3.1:8b"
     ollama_base_url: str = "http://localhost:11434/v1"
     memory_db_path: str = "data/memory.db"
+    context_max_chars: int = 12000
+    history_max_messages: int = 20
 
     @property
     def active_model(self) -> str:
@@ -48,5 +50,11 @@ def get_settings() -> Settings:
         ),
         memory_db_path=os.getenv(
             "MEMORY_DB_PATH", "data/memory.db"
+        ),
+        context_max_chars=int(
+            os.getenv("CONTEXT_MAX_CHARS", "12000")
+        ),
+        history_max_messages=int(
+            os.getenv("HISTORY_MAX_MESSAGES", "20")
         ),
     )
