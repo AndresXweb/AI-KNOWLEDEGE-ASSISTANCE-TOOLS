@@ -4,9 +4,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.config import get_settings
-from app.providers.openrouter import (
+from app.providers.factory import build_provider
+from app.providers.openai_compatible import (
     LLMProviderError,
-    OpenRouterProvider,
 )
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.assistant_service import AssistantService
@@ -18,15 +18,8 @@ router = APIRouter(prefix="/api/v1", tags=["Chat"])
 
 
 def get_assistant_service() -> AssistantService: 
-    settings = get_settings() # valida la configuración de OpenRouter desde las variables de entorno
-
-    provider = OpenRouterProvider(
-        api_key=settings.openrouter_api_key,
-        model=settings.openrouter_model,
-        base_url=settings.openrouter_base_url,
-    )
-
-    return AssistantService(provider)
+    # El proveedor se elige con LLM_PROVIDER (openrouter u ollama)
+    return AssistantService(build_provider())
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -53,5 +46,5 @@ async def chat(
 
     return ChatResponse(
         answer=answer,
-        model=get_settings().openrouter_model,
+        model=get_settings().active_model,
     )

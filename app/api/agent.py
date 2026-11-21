@@ -9,9 +9,9 @@ from fastapi import (
 
 from app.core.config import get_settings
 
-from app.providers.openrouter import (
+from app.providers.factory import build_provider
+from app.providers.openai_compatible import (
     LLMProviderError,
-    OpenRouterProvider,
 )
 
 from app.schemas.agent import (
@@ -34,15 +34,8 @@ router = APIRouter(
 
 
 def get_agent_service() -> AgentService: 
-    settings = get_settings()
-
-    provider = OpenRouterProvider(
-        settings.openrouter_api_key,
-        settings.openrouter_model,
-        settings.openrouter_base_url,
-    )
-
-    return AgentService(provider)
+    # El proveedor se elige con LLM_PROVIDER (openrouter u ollama)
+    return AgentService(build_provider())
 
 
 @router.post(
@@ -86,6 +79,6 @@ async def chat_agent(
 
     return AgentChatResponse(
         answer=result.answer,
-        model=get_settings().openrouter_model,
+        model=get_settings().active_model,
         tools_used=result.tools_used,
     )
