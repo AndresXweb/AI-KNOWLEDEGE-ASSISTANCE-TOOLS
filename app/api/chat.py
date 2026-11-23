@@ -2,12 +2,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.memory import get_memory_repository
-from app.core.config import get_settings
-from app.memory.repository import (
-    MemoryRepository,
-    MemoryStoreError,
+from app.api.memory import (
+    get_memory_repository,
+    resolve_conversation,
 )
+from app.core.config import get_settings
+from app.memory.repository import MemoryRepository
 from app.providers.factory import build_provider
 from app.providers.openai_compatible import (
     LLMProviderError,
@@ -37,29 +37,12 @@ async def chat(
 ):
     settings = get_settings()
 
-    project = None
-
-    if request.conversation_id is not None:
-        conversation = repo.get_conversation(
-            request.conversation_id
-        )
-
-        if conversation is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Conversación no encontrada",
-            )
-    else:
-        try:
-            conversation = repo.create_conversation(
-                project_id=request.project_id,
-                title=request.question[:60],
-            )
-        except MemoryStoreError as exc:
-            raise HTTPException(status_code=404, detail=str(exc))
-
-    if conversation.project_id is not None:
-        project = repo.get_project(conversation.project_id)
+    conversation, project = resolve_conversation(
+        repo,
+        request.conversation_id,
+        request.project_id,
+        request.question,
+    )
 
     # El historial se lee ANTES de guardar la pregunta nueva.
     history = repo.get_messages(

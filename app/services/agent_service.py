@@ -4,8 +4,11 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
-from app.context.builder import build_system_prompt
-from app.memory.repository import Project
+from app.context.builder import (
+    build_messages,
+    build_system_prompt,
+)
+from app.memory.repository import Message, Project
 from app.providers.base import ToolCallingProvider
 from app.repo_analysis.toolset import RepoToolset
 
@@ -65,6 +68,8 @@ class AgentService:
         max_steps: int = 3,
         project: Project | None = None,
         extra_tools: RepoToolset | None = None,
+        history: list[Message] | None = None,
+        max_chars: int = 12000,
     ) -> AgentResult:
 
         system_prompt = build_system_prompt(
@@ -77,16 +82,13 @@ class AgentService:
             system_prompt += "\n\n" + REPO_PROMPT
             tools = tools + extra_tools.definitions()
 
-        messages: list[dict[str, Any]] = [
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": question,
-            },
-        ]
+        # El proyecto ya está dentro de system_prompt.
+        messages: list[dict[str, Any]] = build_messages(
+            system_prompt,
+            question,
+            history=history,
+            max_chars=max_chars,
+        )
 
         used: list[str] = []
 

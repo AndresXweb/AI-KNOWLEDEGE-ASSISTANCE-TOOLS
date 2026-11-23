@@ -13,6 +13,13 @@ class AgentChatRequest(ChatRequest):
         ),
     )
 
+    conversation_id: int | None = Field(
+        default=None,
+        description=(
+            "Conversación existente; si se omite se crea una"
+        ),
+    )
+
     project_id: int | None = Field(
         default=None,
         description=(
@@ -31,3 +38,4 @@ class AgentChatRequest(ChatRequest):
 
 class AgentChatResponse(ChatResponse):
     tools_used: list[str]
+    conversation_id: int

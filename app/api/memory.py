@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.config import get_settings
 from app.memory.repository import (
+    Conversation,
     MemoryRepository,
     MemoryStoreError,
+    Project,
 )
 from app.schemas.memory import (
     ConversationOut,
@@ -70,3 +72,39 @@ async def conversation_messages(
     return [
         m.__dict__ for m in repo.get_messages(conversation_id)
     ]
+
+
+def resolve_conversation(
+    repo: MemoryRepository,
+    conversation_id: int | None,
+    project_id: int | None,
+    title: str,
+) -> tuple[Conversation, Project | None]:
+    """Devuelve la conversación (existente o nueva) y su proyecto.
+
+    Con `conversation_id` se ignora `project_id`: la conversación
+    conserva el proyecto con el que fue creada.
+    """
+    if conversation_id is not None:
+        conversation = repo.get_conversation(conversation_id)
+
+        if conversation is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversación no encontrada",
+            )
+    else:
+        try:
+            conversation = repo.create_conversation(
+                project_id=project_id,
+                title=title[:60],
+            )
+        except MemoryStoreError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+
+    project = None
+
+    if conversation.project_id is not None:
+        project = repo.get_project(conversation.project_id)
+
+    return conversation, project
