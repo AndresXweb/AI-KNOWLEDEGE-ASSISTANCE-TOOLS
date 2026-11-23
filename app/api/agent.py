@@ -1,5 +1,6 @@
 
 import logging
+from pathlib import Path
 
 from fastapi import (
     APIRouter,
@@ -7,7 +8,9 @@ from fastapi import (
     HTTPException,
 )
 
+from app.api.memory import get_memory_repository
 from app.core.config import get_settings
+from app.repo_analysis.toolset import RepoToolset
 
 from app.providers.factory import build_provider
 from app.providers.openai_compatible import (
@@ -49,6 +52,23 @@ async def chat_agent(
     ),
 ) -> AgentChatResponse:
 
+    project = None
+    repo_tools = None
+
+    if request.project_id is not None:
+        project = get_memory_repository().get_project(
+            request.project_id
+        )
+
+        if project is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Proyecto no encontrado",
+            )
+
+        if project.repo_path and Path(project.repo_path).is_dir():
+            repo_tools = RepoToolset(project.repo_path)
+
     try:
         result = await service.ask(
             question=request.question,
@@ -57,6 +77,8 @@ async def chat_agent(
             max_tokens=request.max_tokens,
             confirm_actions=request.confirm_actions,
             max_steps=request.max_steps,
+            project=project,
+            extra_tools=repo_tools,
         )
 
     except (

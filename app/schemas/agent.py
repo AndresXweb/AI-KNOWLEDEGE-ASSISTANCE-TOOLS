@@ -13,6 +13,13 @@ class AgentChatRequest(ChatRequest):
         ),
     )
 
+    project_id: int | None = Field(
+        default=None,
+        description=(
+            "Proyecto cuyo repositorio puede explorar el agente"
+        ),
+    )
+
     max_steps: int = Field(
         default=3,
         ge=1,
